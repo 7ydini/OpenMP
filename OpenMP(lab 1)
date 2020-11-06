@@ -1,0 +1,52 @@
+#include<omp.h>
+#include <string>
+#include <iostream>
+#include <ctime>
+using namespace std;
+
+int main()
+{
+
+	setlocale(LC_ALL, "Russian");
+	srand(time(NULL));
+	int i, j;
+	int N, M;
+	cout << "Кол-во строк матрицы >>";
+	cin >>  N;
+	cout << "Кол-во столбцов матрицы >>";
+	cin >>  M;
+	int** a = new int* [N];
+	for (int i = 0; i < N; i++)
+		a[i] = new int[M];
+	for (j = 0; j < M; j++)
+		for (int i = 0; i < N; i++)
+		{
+			a[i][j] = rand() % 1000;
+		}
+	//for (j = 0; j < M; j++)
+	//	for (i = 0; i < N; i++)
+	//		a[i][j] = rand() % 2;
+	int p, l, g, sum = 0;
+	double time = omp_get_wtime();
+	#pragma omp parallel for
+		for (j = 0; j < M; j++)
+		{
+			for (l = 0; l < N; l++)
+			{
+				for (i = l+1; i < N ; i++)
+				{
+					int p = a[l][j] + a[i][j];
+					while (p > 0)
+					{
+						if (p % 10 == 7)
+							sum++;
+						p /= 10;
+					}
+				}
+			}
+		}
+			printf("Кол-во семерок >> %d \n", abs(sum));
+		
+	double end = omp_get_wtime();
+	cout << omp_get_wtime() - time << endl;
+}
