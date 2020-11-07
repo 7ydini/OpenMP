@@ -1,0 +1,61 @@
+#include<omp.h>
+#include <string>
+#include <iostream>
+#include <ctime>
+using namespace std;
+
+int main()
+{
+	setlocale(LC_ALL, "Russian");
+	srand(time(NULL));
+	int i;
+	int N;
+	cout << "Кол-во элементов массивов A и B >>>";
+	cin >> N;
+	int* a = new int[N];
+	for (int i = 0; i < N; i++)
+	{
+		a[i] = rand() % 1000;
+	}
+	int* b = new int[N];
+	for (int i = 0; i < N; i++)
+	{
+		b[i] = rand() % 1000;
+	}
+	double time = omp_get_wtime();
+	int total = 0, sum = 0, sum2 = 0, total2 = 0;
+#pragma omp parallel shared(a, b) private(i,sum)
+	{
+
+		#pragma omp for
+		for (i = 0; i < N; i++)
+		{
+			sum = a[i] + b[i];
+			if (sum > 1)
+			{
+				#pragma omp critical
+				if (total < sum)
+				{
+					total = sum;
+				}
+			}
+			sum = 4 * a[i] - b[i];
+			if (sum > 1)
+			{
+				#pragma omp critical
+				if (total < sum)
+				{
+					total = sum;
+				}
+			}
+		}
+	}
+
+	 /* Завершение параллельного фрагмента */
+	cout << "Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>>" << total << "\n";
+	double end = omp_get_wtime();
+	cout << omp_get_wtime() - time << endl;
+}
+//При создании массивов на 1 000 000 элементов 
+//Используя распараллеливание выходит 0.22, а без 0.0045, что в 4-5 раз быстрее.
+//Из этого мы можем сделать вывод, что в данных циклах использование критической секции не оптимальный вариант. 
