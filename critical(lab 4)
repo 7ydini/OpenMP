@@ -23,30 +23,28 @@ int main()
 		b[i] = rand() % 1000;
 	}
 	double time = omp_get_wtime();
-	int total = 0, sum = 0;
-#pragma omp parallel shared(a, b) private(i,sum)
+	int total = 0, sum = 0, s;
+#pragma omp parallel shared(a, b) private(i,sum,s)
 	{
-
 		#pragma omp for
 		for (i = 0; i < N; i++)
 		{
 			sum = a[i] + b[i];
-			if (sum > 1)
+			if (sum > 1 && total < sum)
 			{
-				#pragma omp critical
-				if (total < sum)
-				{
-					total = sum;
-				}
+				s = sum - total;
+				#pragma omp atomic
+				total += s;
+				
 			}
+
 			sum = 4 * a[i] - b[i];
-			if (sum > 1)
+			if (sum > 1 && total < sum)
 			{
-				#pragma omp critical
-				if (total < sum)
-				{
-					total = sum;
-				}
+				s = sum - total;
+				#pragma omp atomic
+				total += s;
+
 			}
 		}
 	}
@@ -56,6 +54,3 @@ int main()
 	double end = omp_get_wtime();
 	cout << omp_get_wtime() - time << endl;
 }
-//При создании массивов на 1 000 000 элементов 
-//Используя распараллеливание выходит 0.22, а без 0.0045, что в 4-5 раз быстрее.
-//Из этого мы можем сделать вывод, что в данных циклах использование критической секции не оптимальный вариант. 
