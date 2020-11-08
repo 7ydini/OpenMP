@@ -1,0 +1,63 @@
+#include<omp.h>
+#include <string>
+#include <iostream>
+#include <ctime>
+using namespace std;
+
+int main()
+{
+	setlocale(LC_ALL, "Russian");
+	srand(time(NULL));
+	int i;
+	int N;
+	cout << "Кол-во элементов массивов A и B >>>";
+	cin >> N;
+	int* a = new int[N];//объявление динамического массива
+	for (int i = 0; i < N; i++)//Заполнение случайными числами
+	{
+		a[i] = rand() % 1000;
+	}
+	int* b = new int[N];
+	for (int i = 0; i < N; i++)
+	{
+		b[i] = rand() % 1000;
+	}
+	double time = omp_get_wtime();
+	int total = 0, sum = 0, s;
+	//Элементы массива a и b являются глобальными переменными, а для переменных i, sum - мы создаем локальные копии для работы с ними,
+	//Так как при парралельном использовании этих переменных произойдёт путаница.
+#pragma omp parallel sections shared(a, b) private(sum,i)
+	{
+#pragma omp section//First section
+			{
+				for (i = 0; i < N; i++)
+				{
+					sum = a[i] + b[i];
+					if (sum > 1 && total < sum)
+					{
+						total = sum;
+
+					}
+				}
+			}
+#pragma omp section//Second section
+			{	
+				for (i = 0; i < N; i++)
+				{
+					sum = 4 * a[i] - b[i];
+					if (sum > 1 && total < sum)
+					{
+						total = sum;
+
+					}
+				}
+			}
+
+		
+	}/* Завершение параллельного фрагмента */
+	cout << "Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>>" << total << "\n";
+	double end = omp_get_wtime();
+	cout << omp_get_wtime() - time << endl;
+}
+//При создании массивов на 1 000 000 элементов 
+//Используя секции выходит 0., а без 0., что в  раз .
