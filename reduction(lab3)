@@ -23,7 +23,7 @@ int main()
 			b[i] = rand() % 1000;
 		}
 	double time = omp_get_wtime();
-	int total = 0, sum = 0;
+	int total = 0, sum = 0, s;
 #pragma omp parallel shared(a, b)
 	{
 		#pragma omp for private(sum, i) reduction(|:total)
