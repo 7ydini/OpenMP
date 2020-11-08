@@ -23,28 +23,24 @@ int main()
 			b[i] = rand() % 1000;
 		}
 	double time = omp_get_wtime();
-	int total = 0, sum = 0, sum2 =0, total2 = 0;
+	int total = 0, sum = 0;
 #pragma omp parallel shared(a, b)
 	{
 		#pragma omp for private(sum, i) reduction(|:total)
 		for (i = 0; i < N; i++)
 		{		
 			sum = a[i] + b[i];
-			if (sum > 1)
+			if (sum > 1 && total < sum)
 			{
-				if (total < sum)
-				{
-					total = sum;
-				}
+				total = sum;
+				
 			}
 			
 			sum = 4 * a[i] - b[i];
-			if (sum > 1)
+			if (sum > 1 && total < sum)
 			{
-				if (total < sum)
-				{
-					total = sum;
-				}
+				total = sum;
+
 			}
 		}
 		
