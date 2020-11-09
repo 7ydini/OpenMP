@@ -2,13 +2,15 @@
 #include <string>
 #include <iostream>
 #include <ctime>
+#include<algorithm> 
 using namespace std;
-
+//int fun1(int* A, int* B, int i, int t);
+//int fun2(int* A, int* B, int i, int t);
 int main()
 {
 	setlocale(LC_ALL, "Russian");
 	srand(time(NULL));
-	int i;
+	int j;
 	int N;
 	cout << "Кол-во элементов массивов A и B >>>";
 	cin >> N;
@@ -23,41 +25,60 @@ int main()
 		b[i] = rand() % 1000;
 	}
 	double time = omp_get_wtime();
-	int total = 0, sum = 0, s;
-	//Элементы массива a и b являются глобальными переменными, а для переменных i, sum - мы создаем локальные копии для работы с ними,
-	//Так как при парралельном использовании этих переменных произойдёт путаница.
-#pragma omp parallel sections shared(a, b) private(sum,i)
-	{
-#pragma omp section//First section
+	int total = 0, total2 = 0, sum = 0, s;
+		for (int j = 0; j < N; j++)
+		{
+#pragma omp sections private(sum)
 			{
-				for (i = 0; i < N; i++)
+#pragma omp section		//First section	
 				{
-					sum = a[i] + b[i];
+					sum = a[j] + b[j];
 					if (sum > 1 && total < sum)
 					{
 						total = sum;
 
 					}
 				}
-			}
-#pragma omp section//Second section
-			{	
-				for (i = 0; i < N; i++)
+#pragma omp section		//Second section
 				{
-					sum = 4 * a[i] - b[i];
-					if (sum > 1 && total < sum)
+					sum = 4 * a[j] - b[j];
+					if (sum > 1 && total2 < sum)
 					{
-						total = sum;
+						total2 = sum;
 
 					}
 				}
+				
 			}
+		}
+		if (total > total2)
+		{
+			cout << "Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>>" << total << "\n";
+		}
+		else
+		{
+			cout << "Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>>" << total2 << "\n";
+		}
 
-		
-	}/* Завершение параллельного фрагмента */
-	cout << "Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>>" << total << "\n";
-	double end = omp_get_wtime();
-	cout << omp_get_wtime() - time << endl;
+double end = omp_get_wtime();
+cout << omp_get_wtime() - time << endl;
 }
+/*int fun1(int* A, int* B, int i, int t) {
+	int sum = A[i] + B[i];
+	if (sum > 1 && t < sum)
+	{
+		t = sum;
+	}
+	return t;
+}
+int fun2(int* A, int* B, int i, int t2) {
+	int sum = 4 * A[i] - B[i];
+	if (sum > 1 && t2 < sum)
+	{
+		t2 = sum;
+	}
+	return t2;
+}
+*/
 //При создании массивов на 1 000 000 элементов 
-//Используя секции выходит 0., а без 0., что в  раз .
+//Используя секции выходит 0., а без 0., что в  раз.
