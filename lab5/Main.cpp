@@ -12,26 +12,26 @@ void main()
 	setlocale(LC_ALL, "Russian");
 	srand(time(NULL));
 	int i;	long N;
-	cout << "РљРѕР»-РІРѕ СЌР»РµРјРµРЅС‚РѕРІ РјР°СЃСЃРёРІРѕРІ A Рё B >>>";
+	cout << "Кол-во элементов массивов A и B >>>";
 	cin >> N;
 
-	size_t* a = new size_t[N];//РѕР±СЉСЏРІР»РµРЅРёРµ РґРёРЅР°РјРёС‡РµСЃРєРѕРіРѕ РјР°СЃСЃРёРІР°
-	for (i = 0; i < N; i++)//Р—Р°РїРѕР»РЅРµРЅРёРµ СЃР»СѓС‡Р°Р№РЅС‹РјРё С‡РёСЃР»Р°РјРё
+	size_t* a = new size_t[N];//объявление динамического массива
+	for (i = 0; i < N; i++)//Заполнение случайными числами
 	{
 		a[i] = rand() % 1000;
 	}
 
-	size_t* b = new size_t[N];//РѕР±СЉСЏРІР»РµРЅРёРµ РґРёРЅР°РјРёС‡РµСЃРєРѕРіРѕ РјР°СЃСЃРёРІР°
-	for (i = 0; i < N; i++)//Р—Р°РїРѕР»РЅРµРЅРёРµ СЃР»СѓС‡Р°Р№РЅС‹РјРё С‡РёСЃР»Р°РјРё
+	size_t* b = new size_t[N];//объявление динамического массива
+	for (i = 0; i < N; i++)//Заполнение случайными числами
 	{
 		b[i] = rand() % 1000;
 	}
 
 
 	size_t th_num, num_ths, max_th;
-	max_th = omp_get_max_threads();//РњР°РєСЃРёРјР°Р»СЊРЅРѕРµ РєРѕР»-РІРѕ РїРѕС‚РѕРєРѕРІ
+	max_th = omp_get_max_threads();//Максимальное кол-во потоков
 	printf_s("Max threads= %zu\n", max_th);
-#pragma omp parallel num_threads(max_th) private (num_ths, th_num)//РїСЂРѕРІРµСЂСЏРµРј РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РІСЃРµС… РїРѕС‚РѕРєРѕРІ
+#pragma omp parallel num_threads(max_th) private (num_ths, th_num)//проверяем использование всех потоков
 	{
 		th_num = omp_get_thread_num();
 		num_ths = omp_get_num_threads();
@@ -43,19 +43,19 @@ void main()
 	double time = omp_get_wtime();
 	parall(a, b, N);
 	double end = omp_get_wtime();
-	cout << "With OMP(Atomic):Р’СЂРµРјСЏ >> " << omp_get_wtime() - time << endl;
+	cout << "With OMP(Atomic):Время >> " << omp_get_wtime() - time << endl;
 
 	/*With OpenMP critical
 	double time2 = omp_get_wtime();
 	crit(a, b, N);
 	double end2 = omp_get_wtime();
-	cout << "With OMP(Critical):Р’СЂРµРјСЏ >> " << omp_get_wtime() - time2 << endl;*/
+	cout << "With OMP(Critical):Время >> " << omp_get_wtime() - time2 << endl;*/
 
 	//Without OpenMP atomic
 	double time3 = omp_get_wtime();
 	noparall(a, b, N);
 	double end3 = omp_get_wtime();
-	cout << "Without OMP:Р’СЂРµРјСЏ >> " << omp_get_wtime() - time3 << endl;
+	cout << "Without OMP:Время >> " << omp_get_wtime() - time3 << endl;
 
 
 	double time4 = omp_get_wtime();
@@ -64,7 +64,7 @@ size_t total = 0;
 	{
 #pragma omp section//1 section
 		{
-			total += noparallx(a, b, N, 1, 8);//j - РЅР° СЃРєРѕР»СЊРєРѕ С‡Р°СЃС‚РµР№ СЂР°Р·Р±РёС‚СЊ РјР°СЃСЃРёРІ k-Р°С‚Р°СЏ С‡Р°СЃС‚СЊ РјР°СЃСЃРёРІР°
+			total += noparallx(a, b, N, 1, 8);//j - на сколько частей разбить массив k-атая часть массива
 		}
 #pragma omp section//2 section
 		{
@@ -95,9 +95,9 @@ size_t total = 0;
 			total += noparallx(a, b, N, 8, 8);
 		}
 	}
-	cout << "8 sections >> РЎСѓРјРјР° Р·РЅР°С‡РµРЅРёР№ MAX(A[i] + B[i],4*A[i] - B[i]) СЂР°РІРЅР°>> " << total << endl;
+	cout << "8 sections >> Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>> " << total << endl;
 	double end4 = omp_get_wtime();
-	cout << "With OMP:Р’СЂРµРјСЏ >> " << end4 - time4 << endl;
+	cout << "With OMP:Время >> " << end4 - time4 << endl;
 
 
 
@@ -107,7 +107,7 @@ size_t total = 0;
 	{
 #pragma omp section//1 section
 		{
-			total += noparallx(a, b, N, 1, 4);//j - РЅР° СЃРєРѕР»СЊРєРѕ С‡Р°СЃС‚РµР№ СЂР°Р·Р±РёС‚СЊ РјР°СЃСЃРёРІ k-Р°С‚Р°СЏ С‡Р°СЃС‚СЊ РјР°СЃСЃРёРІР° n1 - 1 РµСЃР»Рё РїРµСЂРІС‹Р№, 0 РІ РѕСЃС‚ СЃР»СѓС‡Р°СЏС…
+			total += noparallx(a, b, N, 1, 4);//j - на сколько частей разбить массив k-атая часть массива n1 - 1 если первый, 0 в ост случаях
 		}
 #pragma omp section//2 section
 		{
@@ -122,9 +122,9 @@ size_t total = 0;
 			total += noparallx(a, b, N, 4, 4);
 		}
 	}
-	cout << "4 sections >> РЎСѓРјРјР° Р·РЅР°С‡РµРЅРёР№ MAX(A[i] + B[i],4*A[i] - B[i]) СЂР°РІРЅР°>> " << total << endl;
+	cout << "4 sections >> Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>> " << total << endl;
 	double end5 = omp_get_wtime();
-	cout << "With OMP:Р’СЂРµРјСЏ >> " << end5 - time5 << endl;
+	cout << "With OMP:Время >> " << end5 - time5 << endl;
 
 
 }
@@ -142,14 +142,14 @@ void noparall(size_t* a, size_t* b, size_t n)
 			}
 		}
 	}
-	cout << "No Parallel >> РЎСѓРјРјР° Р·РЅР°С‡РµРЅРёР№ MAX(A[i] + B[i],4*A[i] - B[i]) СЂР°РІРЅР°>>" << total << "\n";
+	cout << "No Parallel >> Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>>" << total << "\n";
 }
 
 
 void parall(size_t* a, size_t* b, size_t n)
 {
 	int sum = 0, i = 0; size_t total = 0;
-#pragma omp parallel shared(a, b, n) private(sum, i) reduction(+:total) //Р­Р»РµРјРµРЅС‚С‹ РјР°СЃСЃРёРІР° a Рё b СЏРІР»СЏСЋС‚СЃСЏ РіР»РѕР±Р°Р»СЊРЅС‹РјРё РїРµСЂРµРјРµРЅРЅС‹РјРё, Р° РґР»СЏ РїРµСЂРµРјРµРЅРЅС‹С… i, sum - РјС‹ СЃРѕР·РґР°РµРј Р»РѕРєР°Р»СЊРЅС‹Рµ РєРѕРїРёРё РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ РЅРёРјРё,
+#pragma omp parallel shared(a, b, n) private(sum, i) reduction(+:total) //Элементы массива a и b являются глобальными переменными, а для переменных i, sum - мы создаем локальные копии для работы с ними,
 	{
 #pragma omp for
 		for (i = 0; i < n; i++)
@@ -162,15 +162,15 @@ void parall(size_t* a, size_t* b, size_t n)
 			}
 		}
 	}
-	cout << "Atomic Parallel >> РЎСѓРјРјР° Р·РЅР°С‡РµРЅРёР№ MAX(A[i] + B[i],4*A[i] - B[i]) СЂР°РІРЅР°>>" << total << "\n";
+	cout << "Atomic Parallel >> Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>>" << total << "\n";
 }
 
 
 
-size_t noparallx(size_t* a, size_t* b, size_t n, size_t k, size_t j)//j - РЅР° СЃРєРѕР»СЊРєРѕ С‡Р°СЃС‚РµР№ СЂР°Р·Р±РёС‚СЊ РјР°СЃСЃРёРІ, k-Р°С‚Р°СЏ С‡Р°СЃС‚СЊ
+size_t noparallx(size_t* a, size_t* b, size_t n, size_t k, size_t j)//j - на сколько частей разбить массив, k-атая часть
 {
 	int sum = 0, i = 0; size_t total = 0;
-	for (i = (k - 1) * n / j; i < k * n / j; i++)//Р Р°Р·Р±РёР»Рё РјР°СЃСЃРёРІ РЅР° j СЂР°РІРЅС‹С… С‡Р°СЃС‚РµР№, Рё СЃС‡РёС‚Р°РµРј РєР°Р¶РґСѓСЋ k-СЋ С‡Р°СЃС‚СЊ Рё СЃРєР»Р°РґС‹РІР°РµРј РёС…
+	for (i = (k - 1) * n / j; i < k * n / j; i++)//Разбили массив на j равных частей, и считаем каждую k-ю часть и складываем их
 	{
 		sum = max(a[i] + b[i], 4 * a[i] - b[i]);
 		if (sum > 1)
@@ -178,14 +178,14 @@ size_t noparallx(size_t* a, size_t* b, size_t n, size_t k, size_t j)//j - РЅР° С
 			total += sum;
 		}
 	}
-	return total;//Р’РѕР·СЂР°С‰Р°РµРј С‚РѕС‚Р°Р», РґР»СЏ РґР°Р»СЊРЅРµР№С€РёС… РІС‹С‡РёСЃР»РµРЅРёР№
+	return total;//Возращаем тотал, для дальнейших вычислений
 }
 
 /*
 void crit(size_t* a, size_t* b, size_t n)
 {
 	int sum = 0, i = 0; size_t total = 0;
-#pragma omp parallel shared(a, b, n) private(sum, i) reduction(+:total) //Р­Р»РµРјРµРЅС‚С‹ РјР°СЃСЃРёРІР° a Рё b СЏРІР»СЏСЋС‚СЃСЏ РіР»РѕР±Р°Р»СЊРЅС‹РјРё РїРµСЂРµРјРµРЅРЅС‹РјРё, Р° РґР»СЏ РїРµСЂРµРјРµРЅРЅС‹С… i, sum - РјС‹ СЃРѕР·РґР°РµРј Р»РѕРєР°Р»СЊРЅС‹Рµ РєРѕРїРёРё РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ РЅРёРјРё,
+#pragma omp parallel shared(a, b, n) private(sum, i) reduction(+:total) //Элементы массива a и b являются глобальными переменными, а для переменных i, sum - мы создаем локальные копии для работы с ними,
 	{
 #pragma omp for
 		for (i = 0; i < n; i++)
@@ -200,6 +200,6 @@ void crit(size_t* a, size_t* b, size_t n)
 			}
 		}
 	}
-	cout << "Critical Parallel >> РЎСѓРјРјР° Р·РЅР°С‡РµРЅРёР№ MAX(A[i] + B[i],4*A[i] - B[i]) СЂР°РІРЅР°>>" << total << "\n";
+	cout << "Critical Parallel >> Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>>" << total << "\n";
 }*/
-//РџСЂРё СЃРѕР·РґР°РЅРёРё РјР°СЃСЃРёРІРѕРІ РЅР° 10 000 000 СЌР»РµРјРµРЅС‚РѕРІ 
+//При создании массивов на 10 000 000 элементов 
