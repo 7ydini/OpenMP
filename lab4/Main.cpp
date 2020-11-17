@@ -3,53 +3,81 @@
 #include <iostream>
 #include <ctime>
 using namespace std;
-
-int main()
+void parall(size_t* a, size_t* b, size_t n);
+void noparall(size_t* a, size_t* b, size_t n);
+void main()
 {
 	setlocale(LC_ALL, "Russian");
 	srand(time(NULL));
-	int i;
-	int N;
-	cout << "Кол-во элементов массивов A и B >>>";
+	int i;	long N;
+	cout << "РљРѕР»-РІРѕ СЌР»РµРјРµРЅС‚РѕРІ РјР°СЃСЃРёРІРѕРІ A Рё B >>>";
 	cin >> N;
-	int* a = new int[N];
-	for (int i = 0; i < N; i++)
+	size_t* a = new size_t[N];//РѕР±СЉСЏРІР»РµРЅРёРµ РґРёРЅР°РјРёС‡РµСЃРєРѕРіРѕ РјР°СЃСЃРёРІР°
+	for (i = 0; i < N; i++)//Р—Р°РїРѕР»РЅРµРЅРёРµ СЃР»СѓС‡Р°Р№РЅС‹РјРё С‡РёСЃР»Р°РјРё
 	{
 		a[i] = rand() % 1000;
 	}
-	int* b = new int[N];
-	for (int i = 0; i < N; i++)
+	size_t* b = new size_t[N];//РѕР±СЉСЏРІР»РµРЅРёРµ РґРёРЅР°РјРёС‡РµСЃРєРѕРіРѕ РјР°СЃСЃРёРІР°
+	for (i = 0; i < N; i++)//Р—Р°РїРѕР»РЅРµРЅРёРµ СЃР»СѓС‡Р°Р№РЅС‹РјРё С‡РёСЃР»Р°РјРё
 	{
 		b[i] = rand() % 1000;
 	}
-	double time = omp_get_wtime();
-	int total = 0, sum = 0, s;
-#pragma omp parallel shared(a, b, total) private(i,sum)//Элементы массива a и b являются глобальными переменными, а для переменных i, sum - мы создаем локальные копии для работы с ними
+	size_t th_num, num_ths, max_th;
+	max_th = omp_get_max_threads();//РњР°РєСЃРёРјР°Р»СЊРЅРѕРµ РєРѕР»-РІРѕ РїРѕС‚РѕРєРѕРІ
+	printf_s("Max threads= %zu\n", max_th);
+#pragma omp parallel num_threads(max_th) private (num_ths, th_num)//РїСЂРѕРІРµСЂСЏРµРј РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РІСЃРµС… РїРѕС‚РѕРєРѕРІ
 	{
-		#pragma omp for
-		for (i = 0; i < N; i++)
-		{
-			sum = a[i] + b[i];
-			if (sum > (4 * a[i] - b[i]) && sum > 1)
-			{
-			#pragma omp atomic
-				total += sum;
-			}
-		}
-		#pragma omp for
-		for (i = 0; i < N; i++)
-		{
-			sum = 4 * a[i] - b[i];
-			if (sum > (a[i] - b[i]) && sum > 1)
-			{
-			#pragma omp atomic
-				total += sum;
-			}
-		}
-	}/* Завершение параллельного фрагмента */
-	cout << "Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>>" << total << "\n";
+		th_num = omp_get_thread_num();
+		num_ths = omp_get_num_threads();
+		printf("I am ready %zu from %zu \n", th_num, num_ths);
+	}
+
+	//With OpenMP
+	double time = omp_get_wtime();
+	parall(a, b, N);
 	double end = omp_get_wtime();
-	cout << omp_get_wtime() - time << endl;
+	cout << "With OMP:Р’СЂРµРјСЏ >> " << omp_get_wtime() - time << endl;
+
+	//Without OpenMP
+	double time2 = omp_get_wtime();
+	noparall(a, b, N);
+	double end2 = omp_get_wtime();
+	cout << "Without OMP:Р’СЂРµРјСЏ >> " << omp_get_wtime() - time2 << endl;
 }
-//При создании массивов на 10 000 000 элементов 
-//Используя critical выходит 1.7, а без 0.037, что в 4-5 раза быстрее, используя atomic выходит 0.021
+
+void noparall(size_t* a, size_t* b, size_t n)
+{
+	int sum = 0, i = 0;	size_t total = 0;
+	{
+		for (i = 0; i < n; i++)
+		{
+			sum = max(a[i] + b[i], 4 * a[i] - b[i]);
+			if (sum > 1)
+			{
+				total += sum;
+			}
+		}
+	} /* Р—Р°РІРµСЂС€РµРЅРёРµ РїР°СЂР°Р»Р»РµР»СЊРЅРѕРіРѕ С„СЂР°РіРјРµРЅС‚Р° */
+	cout << "No Parallel >> РЎСѓРјРјР° Р·РЅР°С‡РµРЅРёР№ MAX(A[i] + B[i],4*A[i] - B[i]) СЂР°РІРЅР°>>" << total << "\n";
+}
+
+
+void parall(size_t* a, size_t* b, size_t n)
+{
+	int sum = 0, i = 0; size_t total = 0;
+#pragma omp parallel shared(a, b, n) private(sum, i) reduction(+:total) //Р­Р»РµРјРµРЅС‚С‹ РјР°СЃСЃРёРІР° a Рё b СЏРІР»СЏСЋС‚СЃСЏ РіР»РѕР±Р°Р»СЊРЅС‹РјРё РїРµСЂРµРјРµРЅРЅС‹РјРё, Р° РґР»СЏ РїРµСЂРµРјРµРЅРЅС‹С… i, sum - РјС‹ СЃРѕР·РґР°РµРј Р»РѕРєР°Р»СЊРЅС‹Рµ РєРѕРїРёРё РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ РЅРёРјРё,
+	{
+#pragma omp for
+		for (i = 0; i < n; i++)
+		{
+			sum = max(a[i] + b[i], 4 * a[i] - b[i]);
+			if (sum > 1)
+			{
+			#pragma omp atomic
+				total += sum;
+			}
+		}
+	} /* Р—Р°РІРµСЂС€РµРЅРёРµ РїР°СЂР°Р»Р»РµР»СЊРЅРѕРіРѕ С„СЂР°РіРјРµРЅС‚Р° */
+	cout << "Parallel >> РЎСѓРјРјР° Р·РЅР°С‡РµРЅРёР№ MAX(A[i] + B[i],4*A[i] - B[i]) СЂР°РІРЅР°>>" << total << "\n";
+}
+//РџСЂРё СЃРѕР·РґР°РЅРёРё РјР°СЃСЃРёРІРѕРІ РЅР° 10 000 000 СЌР»РµРјРµРЅС‚РѕРІ 
