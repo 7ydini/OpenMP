@@ -3,8 +3,9 @@
 #include <iostream>
 #include <ctime>
 using namespace std;
-void parall(size_t* a, size_t* b, size_t n);
+void atom(size_t* a, size_t* b, size_t n);
 void noparall(size_t* a, size_t* b, size_t n);
+void crit(size_t* a, size_t* b, size_t n);
 void main()
 {
 	setlocale(LC_ALL, "Russian");
@@ -12,16 +13,20 @@ void main()
 	int i;	long N;
 	cout << "Кол-во элементов массивов A и B >>>";
 	cin >> N;
+
 	size_t* a = new size_t[N];//объявление динамического массива
 	for (i = 0; i < N; i++)//Заполнение случайными числами
 	{
 		a[i] = rand() % 1000;
 	}
+
 	size_t* b = new size_t[N];//объявление динамического массива
 	for (i = 0; i < N; i++)//Заполнение случайными числами
 	{
 		b[i] = rand() % 1000;
 	}
+
+
 	size_t th_num, num_ths, max_th;
 	max_th = omp_get_max_threads();//Максимальное кол-во потоков
 	printf_s("Max threads= %zu\n", max_th);
@@ -32,17 +37,25 @@ void main()
 		printf("I am ready %zu from %zu \n", th_num, num_ths);
 	}
 
+
 	//With OpenMP
 	double time = omp_get_wtime();
-	parall(a, b, N);
+	atom(a, b, N);
 	double end = omp_get_wtime();
-	cout << "With OMP:Время >> " << omp_get_wtime() - time << endl;
+	cout << "With OMP(Atomic):Время >> " << omp_get_wtime() - time << endl;
 
-	//Without OpenMP
+	//With OpenMP critical
 	double time2 = omp_get_wtime();
-	noparall(a, b, N);
+	crit(a, b, N);
 	double end2 = omp_get_wtime();
-	cout << "Without OMP:Время >> " << omp_get_wtime() - time2 << endl;
+	cout << "With OMP(Critical):Время >> " << omp_get_wtime() - time2 << endl;
+
+	//Without OpenMP atomic
+	double time3 = omp_get_wtime();
+	atom(a, b, N);
+	double end3 = omp_get_wtime();
+	cout << "Without OMP:Время >> " << omp_get_wtime() - time3 << endl;
+
 }
 
 void noparall(size_t* a, size_t* b, size_t n)
@@ -57,12 +70,12 @@ void noparall(size_t* a, size_t* b, size_t n)
 				total += sum;
 			}
 		}
-	} /* Завершение параллельного фрагмента */
+	}
 	cout << "No Parallel >> Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>>" << total << "\n";
 }
 
 
-void parall(size_t* a, size_t* b, size_t n)
+void atom(size_t* a, size_t* b, size_t n)
 {
 	int sum = 0, i = 0; size_t total = 0;
 #pragma omp parallel shared(a, b, n) private(sum, i) reduction(+:total) //Элементы массива a и b являются глобальными переменными, а для переменных i, sum - мы создаем локальные копии для работы с ними,
@@ -77,7 +90,29 @@ void parall(size_t* a, size_t* b, size_t n)
 				total += sum;
 			}
 		}
-	} /* Завершение параллельного фрагмента */
-	cout << "Parallel >> Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>>" << total << "\n";
+	}
+	cout << "Atomic Parallel >> Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>>" << total << "\n";
+}
+
+void crit(size_t* a, size_t* b, size_t n)
+{
+	int sum = 0, i = 0; size_t total = 0;
+#pragma omp parallel shared(a, b, n) private(sum, i) reduction(+:total) //Элементы массива a и b являются глобальными переменными, а для переменных i, sum - мы создаем локальные копии для работы с ними,
+	{
+#pragma omp for
+		for (i = 0; i < n; i++)
+		{
+			sum = max(a[i] + b[i], 4 * a[i] - b[i]);
+			if (sum > 1)
+			{
+#pragma omp critical
+				{
+					total += sum;
+				}
+			}
+		}
+	} 
+	cout << "Critical Parallel >> Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>>" << total << "\n";
 }
 //При создании массивов на 10 000 000 элементов 
+//Использовать критические секции в данном коде не эффективно.
