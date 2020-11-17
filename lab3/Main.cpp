@@ -3,51 +3,79 @@
 #include <iostream>
 #include <ctime>
 using namespace std;
+void parall(size_t* a, size_t* b, size_t n);
+void noparall(size_t* a, size_t* b, size_t n);
 void main()
 {
 	setlocale(LC_ALL, "Russian");
 	srand(time(NULL));
-	int i, N;
-	cout << "Кол-во элементов массивов A и B >>>";
+	int i;	long N;
+	cout << "РљРѕР»-РІРѕ СЌР»РµРјРµРЅС‚РѕРІ РјР°СЃСЃРёРІРѕРІ A Рё B >>>";
 	cin >> N;
-	size_t* a = new size_t[N];//объявление динамического массива
-	for (i = 0; i < N; i++)//Заполнение случайными числами
+	size_t* a = new size_t[N];//РѕР±СЉСЏРІР»РµРЅРёРµ РґРёРЅР°РјРёС‡РµСЃРєРѕРіРѕ РјР°СЃСЃРёРІР°
+	for (i = 0; i < N; i++)//Р—Р°РїРѕР»РЅРµРЅРёРµ СЃР»СѓС‡Р°Р№РЅС‹РјРё С‡РёСЃР»Р°РјРё
 	{
 		a[i] = rand() % 1000;
 	}
-	size_t* b = new size_t[N];//объявление динамического массива
-	for (i = 0; i < N; i++)//Заполнение случайными числами
+	size_t* b = new size_t[N];//РѕР±СЉСЏРІР»РµРЅРёРµ РґРёРЅР°РјРёС‡РµСЃРєРѕРіРѕ РјР°СЃСЃРёРІР°
+	for (i = 0; i < N; i++)//Р—Р°РїРѕР»РЅРµРЅРёРµ СЃР»СѓС‡Р°Р№РЅС‹РјРё С‡РёСЃР»Р°РјРё
 	{
 		b[i] = rand() % 1000;
 	}
-
 	size_t th_num, num_ths, max_th;
-	max_th = omp_get_max_threads();//Максимальное кол-во потоков
+	max_th = omp_get_max_threads();//РњР°РєСЃРёРјР°Р»СЊРЅРѕРµ РєРѕР»-РІРѕ РїРѕС‚РѕРєРѕРІ
 	printf_s("Max threads= %zu\n", max_th);
-#pragma omp parallel num_threads(max_th) private (num_ths, th_num)//проверяем использование всех потоков
+#pragma omp parallel num_threads(max_th) private (num_ths, th_num)//РїСЂРѕРІРµСЂСЏРµРј РёСЃРїРѕР»СЊР·РѕРІР°РЅРёРµ РІСЃРµС… РїРѕС‚РѕРєРѕРІ
 	{
 		th_num = omp_get_thread_num();
 		num_ths = omp_get_num_threads();
 		printf("I am ready %zu from %zu \n", th_num, num_ths);
 	}
-
+	
+	//With OpenMP
 	double time = omp_get_wtime();
-	int total = 0, sum = 0;
-#pragma omp parallel shared(a, b, N) private(sum, i) reduction(+:total) //Элементы массива a и b являются глобальными переменными, а для переменных i, sum - мы создаем локальные копии для работы с ними,
-	{  
-#pragma omp for
-		for (i = 0; i < N; i++)
+	parall(a, b, N);	
+	double end = omp_get_wtime();
+	cout <<"With OMP:Р’СЂРµРјСЏ >> "<< omp_get_wtime() - time << endl;
+	
+	//Without OpenMP
+	double time2 = omp_get_wtime();
+	noparall(a, b, N);
+	double end2 = omp_get_wtime();
+	cout << "Without OMP:Р’СЂРµРјСЏ >> " << omp_get_wtime() - time2 << endl;
+}
+
+void noparall(size_t* a, size_t* b, size_t n)
+{
+	int sum = 0, i = 0;	size_t total = 0;
+	{
+		for (i = 0; i < n; i++)
 		{
-			sum = max(a[i] + b[i], 4*a[i] - b[i]);
+			sum = max(a[i] + b[i], 4 * a[i] - b[i]);//РќР°С…РѕРґРёРј MAX(A[i] + B[i],4*A[i] - B[i])
 			if (sum > 1)
 			{
-				total += sum;
+				total += sum;//РџСЂРёР±Р°РІР»СЏРµРј Рє total РЅР°РёР±РѕР»СЊС€РµРµ РёР· 2С… РІС‹СЂР°Р¶РµРЅРёР№.
 			}
 		}
-	} /* Завершение параллельного фрагмента */
-	cout << "Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>>" << total << "\n";
-	double end = omp_get_wtime();
-	cout << omp_get_wtime() - time << endl;
+	} /* Р—Р°РІРµСЂС€РµРЅРёРµ РїР°СЂР°Р»Р»РµР»СЊРЅРѕРіРѕ С„СЂР°РіРјРµРЅС‚Р° */
+	cout << "No Parallel >> РЎСѓРјРјР° Р·РЅР°С‡РµРЅРёР№ MAX(A[i] + B[i],4*A[i] - B[i]) СЂР°РІРЅР°>>" << total << "\n";
 }
-//При создании массивов на 10 000 000 элементов 
-//Используя распараллеливание выходит 0.007, а без 0.012, что в 5-6 раз медленнее.
+void parall(size_t* a, size_t* b, size_t n)
+{
+	int sum = 0, i = 0; size_t total = 0;
+#pragma omp parallel shared(a, b, n) private(sum, i) reduction(+:total) //Р­Р»РµРјРµРЅС‚С‹ РјР°СЃСЃРёРІР° a Рё b СЏРІР»СЏСЋС‚СЃСЏ РіР»РѕР±Р°Р»СЊРЅС‹РјРё РїРµСЂРµРјРµРЅРЅС‹РјРё, Р° РґР»СЏ РїРµСЂРµРјРµРЅРЅС‹С… i, sum - РјС‹ СЃРѕР·РґР°РµРј Р»РѕРєР°Р»СЊРЅС‹Рµ РєРѕРїРёРё РґР»СЏ СЂР°Р±РѕС‚С‹ СЃ РЅРёРјРё,
+	{
+#pragma omp for
+		for (i = 0; i < n; i++)
+		{
+			sum = max(a[i] + b[i], 4 * a[i] - b[i]);
+			if (sum > 1)
+			{
+				total += sum;//РџСЂРёР±Р°РІР»СЏРµРј Рє total РЅР°РёР±РѕР»СЊС€РµРµ РёР· 2С… РІС‹СЂР°Р¶РµРЅРёР№.
+			}
+		}
+	} /* Р—Р°РІРµСЂС€РµРЅРёРµ РїР°СЂР°Р»Р»РµР»СЊРЅРѕРіРѕ С„СЂР°РіРјРµРЅС‚Р° */
+	cout << "Parallel >> РЎСѓРјРјР° Р·РЅР°С‡РµРЅРёР№ MAX(A[i] + B[i],4*A[i] - B[i]) СЂР°РІРЅР°>>" << total << "\n";
+}
+//РџСЂРё СЃРѕР·РґР°РЅРёРё РјР°СЃСЃРёРІРѕРІ РЅР° 10 000 000 СЌР»РµРјРµРЅС‚РѕРІ 
+//РСЃРїРѕР»СЊР·СѓСЏ СЂР°СЃРїР°СЂР°Р»Р»РµР»РёРІР°РЅРёРµ РІС‹С…РѕРґРёС‚ 0.005, Р° Р±РµР· 0.017, С‡С‚Рѕ РІ 2-3-4 СЂР°Р· РјРµРґР»РµРЅРЅРµРµ.
