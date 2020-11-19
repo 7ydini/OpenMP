@@ -9,7 +9,7 @@ void main()
 {
 	setlocale(LC_ALL, "Russian");
 	srand(time(NULL));
-	int i;	long N;
+	int i;	size_t N;
 	cout << "Кол-во элементов массивов A и B >>>";
 	cin >> N;
 	size_t* a = new size_t[N];//объявление динамического массива
@@ -22,6 +22,7 @@ void main()
 	{
 		b[i] = rand() % 1000;
 	}
+	
 	size_t th_num, num_ths, max_th;
 	max_th = omp_get_max_threads();//Максимальное кол-во потоков
 	printf_s("Max threads= %zu\n", max_th);
@@ -51,7 +52,7 @@ void noparall(size_t* a, size_t* b, size_t n)
 	{
 		for (i = 0; i < n; i++)
 		{
-			sum = max(a[i] + b[i], 4 * a[i] - b[i]);//Находим MAX(A[i] + B[i],4*A[i] - B[i])
+			sum = max(a[i] + b[i], 4 * a[i] - b[i]);// Находим какое из 2х выражений мы приравняем к sum
 			if (sum > 1)
 			{
 				total += sum;//Прибавляем к total наибольшее из 2х выражений.
@@ -68,7 +69,7 @@ void parall(size_t* a, size_t* b, size_t n)
 #pragma omp for
 		for (i = 0; i < n; i++)
 		{
-			sum = max(a[i] + b[i], 4 * a[i] - b[i]);
+			sum = max(a[i] + b[i], 4 * a[i] - b[i]);// Находим какое из 2х выражений мы приравняем к sum
 			if (sum > 1)
 			{
 				total += sum;//Прибавляем к total наибольшее из 2х выражений.
@@ -78,4 +79,6 @@ void parall(size_t* a, size_t* b, size_t n)
 	cout << "Parallel >> Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>>" << total << "\n";
 }
 //При создании массивов на 10 000 000 элементов 
-//Используя распараллеливание выходит 0.005, а без 0.017, что в 2-3-4 раз медленнее.
+//Используя распараллеливание выходит 0.005, а без 0.017, что в 2-4 раз медленнее.
+//При создании массивов на 100 000 000 элементов 
+//Используя распараллеливание выходит 0.034, а без 0.15, что в 3-5 раз медленнее.
