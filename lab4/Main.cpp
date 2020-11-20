@@ -71,14 +71,14 @@ void noparall(size_t* a, size_t* b, size_t n)
 			}
 		}
 	}
-	cout << "No Parallel >> Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>>" << total << "\n";
+	cout << "No Parallel >> Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>>" << total << "\n \n";
 }
 
 
 void atom(size_t* a, size_t* b, size_t n)
 {
 	int sum = 0, i = 0; size_t total = 0;
-#pragma omp parallel shared(a, b, n) private(sum, i) reduction(+:total) //Элементы массива a и b являются глобальными переменными, а для переменных i, sum - мы создаем локальные копии для работы с ними,
+#pragma omp parallel shared(a, b, n, total) private(sum, i) //Элементы массива a и b являются глобальными переменными, а для переменных i, sum - мы создаем локальные копии для работы с ними,
 	{
 #pragma omp for
 		for (i = 0; i < n; i++)
@@ -91,13 +91,14 @@ void atom(size_t* a, size_t* b, size_t n)
 			}
 		}
 	}
-	cout << "Atomic Parallel >> Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>>" << total << "\n";
+	cout << "Atomic Parallel >> Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>>" << total << "\n \n";
 }
+
 
 void crit(size_t* a, size_t* b, size_t n)
 {
 	int sum = 0, i = 0; size_t total = 0;
-#pragma omp parallel shared(a, b, n) private(sum, i) reduction(+:total) //Элементы массива a и b являются глобальными переменными, а для переменных i, sum - мы создаем локальные копии для работы с ними,
+#pragma omp parallel shared(a, b, n, total) private(sum, i) //Элементы массива a и b являются глобальными переменными, а для переменных i, sum - мы создаем локальные копии для работы с ними,
 	{
 #pragma omp for
 		for (i = 0; i < n; i++)
@@ -112,7 +113,7 @@ void crit(size_t* a, size_t* b, size_t n)
 			}
 		}
 	} 
-	cout << "Critical Parallel >> Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>>" << total << "\n";
+	cout << "Critical Parallel >> Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>>" << total << "\n \n";
 }
 //При создании массивов на 10 000 000 элементов 
 //Использовать критические секции в данном коде не эффективно.
