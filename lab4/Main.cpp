@@ -52,7 +52,7 @@ void main()
 
 	//Without OpenMP atomic
 	double time3 = omp_get_wtime();
-	atom(a, b, N);
+	noparall(a, b, N);
 	double end3 = omp_get_wtime();
 	cout << "Without OMP:Время >> " << omp_get_wtime() - time3 << endl;
 
