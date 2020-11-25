@@ -60,49 +60,39 @@ void main()
 	//total1 = total2 = total3 = total4 = total5 = total6 = total7 = total8 = 0;
 	size_t total = 0;
 	double time4 = omp_get_wtime();
-	
-// Буду сумировать в переменную total значения, разбивая основной массив на 8-мь, 6-ть, и 4-е части.
-	
-#pragma omp parallel sections
+	int sum = 0;
+#pragma omp parallel sections shared(a, b, N) reduction(+:total)
 	{
 #pragma omp section//1 section
 		{
-#pragma omp atomic
 			total += noparallx(a, b, N, 1, 8);//j - на сколько частей разбить массив k-атая часть массива
 		}
 #pragma omp section//2 section
 		{
-#pragma omp atomic
 			total += noparallx(a, b, N, 2, 8);
 		}
 #pragma omp section//3 section
 		{
-#pragma omp atomic
 			total += noparallx(a, b, N, 3, 8);
 		}
 #pragma omp section//4 section
 		{
-#pragma omp atomic
 			total += noparallx(a, b, N, 4, 8);
 		}
 #pragma omp section//5 section
 		{
-#pragma omp atomic
 			total += noparallx(a, b, N, 5, 8);
 		}
 #pragma omp section//6 section
 		{
-#pragma omp atomic
 			total += noparallx(a, b, N, 6, 8);
 		}
 #pragma omp section//7 section
 		{
-#pragma omp atomic
 			total += noparallx(a, b, N, 7, 8);
 		}
 #pragma omp section//8 section
 		{
-#pragma omp atomic
 			total += noparallx(a, b, N, 8, 8);
 		}
 	}
@@ -116,37 +106,33 @@ void main()
 	//total1 = total2 = total3 = total4 = total5 = total6 = total7 = total8 = 0;
 	total = 0;
 
+	// Буду сумировать в переменную total значения, разбивая основной массив на 8-мь, 6-ть, и 4-е части.
+
 	double time6 = omp_get_wtime();
-#pragma omp parallel sections
+#pragma omp parallel sections shared(a, b, N) reduction(+:total)
 	{
 #pragma omp section//1 section
 		{
-#pragma omp atomic
 			total += noparallx(a, b, N, 1, 6);//j - на сколько частей разбить массив k-атая часть массива
 		}
 #pragma omp section//2 section
 		{
-#pragma omp atomic
 			total += noparallx(a, b, N, 2, 6);
 		}
 #pragma omp section//3 section
 		{
-#pragma omp atomic
 			total += noparallx(a, b, N, 3, 6);
 		}
 #pragma omp section//4 section
 		{
-#pragma omp atomic
 			total += noparallx(a, b, N, 4, 6);
 		}
 #pragma omp section//5 section
 		{
-#pragma omp atomic
 			total += noparallx(a, b, N, 5, 6);
 		}
 #pragma omp section//6 section
 		{
-#pragma omp atomic
 			total += noparallx(a, b, N, 6, 6);
 		}
 	}
@@ -160,26 +146,22 @@ void main()
 	//total1 = total2 = total3 = total4 = total5 = total6 = total7 = total8 = 0;
 	double time5 = omp_get_wtime();
 
-#pragma omp parallel sections
+#pragma omp parallel sections shared(a, b, N) reduction(+:total)
 	{
 #pragma omp section//1 section
 		{
-#pragma omp atomic
 			total += noparallx(a, b, N, 1, 4);//j - на сколько частей разбить массив k-атая часть массива n1 - 1 если первый, 0 в ост случаях
 		}
 #pragma omp section//2 section
 		{
-#pragma omp atomic
 			total += noparallx(a, b, N, 2, 4);
 		}
 #pragma omp section//3 section
 		{
-#pragma omp atomic
 			total += noparallx(a, b, N, 3, 4);
 		}
 #pragma omp section//4 section
 		{
-#pragma omp atomic
 			total += noparallx(a, b, N, 4, 4);
 		}
 	}
@@ -247,46 +229,24 @@ size_t noparallx(size_t* a, size_t* b, size_t n, size_t k, size_t j)//j - на �
 }
 /*
 * 100 000 000 элементов:
-* 8 sections >> 0.0396042
-* 6 sections >> 0.0338877
-* 4 sections >> 0.0360397
+* 8 sections >> 0.035307
+* 6 sections >> 0.0319377
+* 4 sections >> 0.0357349
 * 
 * 
 * 1 000 000 элементов:
-* 8 sections >> 0.0034571
-* 6 sections >> 0.0023901
-* 4 sections >> 0.0029568
+* 8 sections >> 0.003476
+* 6 sections >> 0.0025901
+* 4 sections >> 0.0030346
 * 
 * 
 * 100 000 элементов:
-* 8 sections >> 0.0023305
-* 6 sections >> 0.002523
-* 4 sections >> 0.0026345
+* 8 sections >> 0.0024116
+* 6 sections >> 0.0023257
+* 4 sections >> 0.0024738
 * 
 * 10 000 элементов:
-* 8 sections >> 0.0023138
-* 6 sections >> 0.0022363
-* 4 sections >> 0.0025705
+* 8 sections >> 0.0022094
+* 6 sections >> 0.0022164
+* 4 sections >> 0.0024899
 */
-
-/*
-void crit(size_t* a, size_t* b, size_t n)
-{
-	int sum = 0, i = 0; size_t total = 0;
-#pragma omp parallel shared(a, b, n) private(sum, i) reduction(+:total) //Элементы массива a и b являются глобальными переменными, а для переменных i, sum - мы создаем локальные копии для работы с ними,
-	{
-#pragma omp for
-		for (i = 0; i < n; i++)
-		{
-			sum = max(a[i] + b[i], 4 * a[i] - b[i]);
-			if (sum > 1)
-			{
-#pragma omp critical
-				{
-					total += sum;
-				}
-			}
-		}
-	}
-	cout << "Critical Parallel >> Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>>" << total << "\n";
-}*/
