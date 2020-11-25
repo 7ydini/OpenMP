@@ -71,7 +71,7 @@ void noparall(size_t* a, size_t* b, size_t n)
 			}
 		}
 	}
-	cout << "No Parallel >> Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>>" << total << "\n \n";
+	cout << "No Parallel >> Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>>" << total << endl;
 }
 
 
@@ -91,7 +91,7 @@ void atom(size_t* a, size_t* b, size_t n)
 			}
 		}
 	}
-	cout << "Atomic Parallel >> Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>>" << total << "\n \n";
+	cout << "Atomic Parallel >> Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>>" << total << endl;
 }
 
 
@@ -113,7 +113,24 @@ void crit(size_t* a, size_t* b, size_t n)
 			}
 		}
 	} 
-	cout << "Critical Parallel >> Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>>" << total << "\n \n";
+	cout << "Critical Parallel >> Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>>" << total << endl;
 }
 //При создании массивов на 10 000 000 элементов 
-//Использовать критические секции в данном коде не эффективно.
+//0.16 - atomic; 
+//1.07 - critical;
+//
+//При создании на 1 000 000 элементов:
+//0.02 - atomic;
+//0.11 - critical;
+//
+//При создании на 100 000 элементов:
+//0.0043 - atomic; 
+//0.01 - critical;
+//
+//При создании на 10 000 элементов:
+//0.0029113 - atomic;  
+//0.0030356 - ctirical;
+//
+//При создании на 1 000 элементов:
+//0.0020194 - atomic;
+//0.0017716 - critical;
