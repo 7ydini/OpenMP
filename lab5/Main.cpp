@@ -26,7 +26,6 @@ void main()
 		b[i] = rand() % 1000;
 	}
 
-
 	size_t th_num, num_ths, max_th;
 	max_th = omp_get_max_threads();//Максимальное кол-во потоков
 	printf_s("Max threads= %zu\n", max_th);
