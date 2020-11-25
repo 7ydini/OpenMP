@@ -60,7 +60,9 @@ void main()
 	//total1 = total2 = total3 = total4 = total5 = total6 = total7 = total8 = 0;
 	size_t total = 0;
 	double time4 = omp_get_wtime();
-
+	
+// Буду сумировать в переменную total значения, разбивая основной массив на 8-мь, 6-ть, и 4-е части.
+	
 #pragma omp parallel sections
 	{
 #pragma omp section//1 section
