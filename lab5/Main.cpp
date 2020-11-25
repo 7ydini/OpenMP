@@ -64,36 +64,36 @@ void main()
 #pragma omp parallel sections shared(a, b, N) reduction(+:total)
 	{
 #pragma omp section//1 section
-		{
-			total += noparallx(a, b, N, 1, 8);//j - на сколько частей разбить массив k-атая часть массива
+		{		//j - на сколько частей разбить массив k-атая часть массива
+			total += noparallx(a, b, N, 1, 8); // От 0/8 до 1/8 массива
 		}
 #pragma omp section//2 section
 		{
-			total += noparallx(a, b, N, 2, 8);
+			total += noparallx(a, b, N, 2, 8); // от 1/8 до 2/8 mass
 		}
 #pragma omp section//3 section
 		{
-			total += noparallx(a, b, N, 3, 8);
+			total += noparallx(a, b, N, 3, 8);// от 2/8 до 3/8 mass
 		}
 #pragma omp section//4 section
 		{
-			total += noparallx(a, b, N, 4, 8);
+			total += noparallx(a, b, N, 4, 8);// от 3/8 до 4/8 mass
 		}
 #pragma omp section//5 section
 		{
-			total += noparallx(a, b, N, 5, 8);
+			total += noparallx(a, b, N, 5, 8);// от 4/8 до 5/8 mass
 		}
 #pragma omp section//6 section
 		{
-			total += noparallx(a, b, N, 6, 8);
+			total += noparallx(a, b, N, 6, 8);// от 5/8 до 6/8 mass
 		}
 #pragma omp section//7 section
 		{
-			total += noparallx(a, b, N, 7, 8);
+			total += noparallx(a, b, N, 7, 8);// от 6/8 до 7/8 mass
 		}
 #pragma omp section//8 section
 		{
-			total += noparallx(a, b, N, 8, 8);
+			total += noparallx(a, b, N, 8, 8);// от 7/8 до 8/8 mass
 		}
 	}
 	//total = total1 + total2 + total3 + total4 + total5 + total6 + total7 + total8;
@@ -117,23 +117,23 @@ void main()
 		}
 #pragma omp section//2 section
 		{
-			total += noparallx(a, b, N, 2, 6);
+			total += noparallx(a, b, N, 2, 6);//1/6 до 2/6
 		}
 #pragma omp section//3 section
 		{
-			total += noparallx(a, b, N, 3, 6);
+			total += noparallx(a, b, N, 3, 6);//2/6 до 3/6
 		}
 #pragma omp section//4 section
 		{
-			total += noparallx(a, b, N, 4, 6);
+			total += noparallx(a, b, N, 4, 6);//3/6 до 4/6
 		}
 #pragma omp section//5 section
 		{
-			total += noparallx(a, b, N, 5, 6);
+			total += noparallx(a, b, N, 5, 6);//4/6 до 5/6
 		}
 #pragma omp section//6 section
 		{
-			total += noparallx(a, b, N, 6, 6);
+			total += noparallx(a, b, N, 6, 6);// 5/6 до 6/6
 		}
 	}
 	cout << "6 sections >> Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>> " << total << endl;
@@ -154,15 +154,15 @@ void main()
 		}
 #pragma omp section//2 section
 		{
-			total += noparallx(a, b, N, 2, 4);
+			total += noparallx(a, b, N, 2, 4);// OT 1/4 ДО 2/4 
 		}
 #pragma omp section//3 section
 		{
-			total += noparallx(a, b, N, 3, 4);
+			total += noparallx(a, b, N, 3, 4);// OT 2/4 ДО 3/4
 		}
 #pragma omp section//4 section
 		{
-			total += noparallx(a, b, N, 4, 4);
+			total += noparallx(a, b, N, 4, 4);// OT 3/4 ДО 4/4
 		}
 	}
 	cout << "4 sections >> Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>> " << total << endl;
@@ -217,7 +217,7 @@ void parall(size_t* a, size_t* b, size_t n)
 size_t noparallx(size_t* a, size_t* b, size_t n, size_t k, size_t j)//j - на сколько частей разбить массив, k-атая часть
 {
 	int sum = 0, i = 0; size_t total = 0;
-	for (i = (k - 1) * n / j; i < k * n / j; i++)//Разбили массив на j равных частей, и считаем каждую k-ю часть и складываем их
+	for (i = (k - 1) * n / j; i < k * n / j; i++)//Разбили массив на j равных частей, и считаем каждую k-ю часть
 	{
 		sum = max(a[i] + b[i], 4 * a[i] - b[i]);
 		if (sum > 1)
