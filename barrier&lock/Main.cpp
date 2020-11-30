@@ -111,3 +111,36 @@ void barrier_parall(size_t* a, size_t* b, size_t n)
 	cout << "\n Barrier Parallel >> Сумма значений MAX(A[i] + B[i],4*A[i] - B[i]) равна>>" << total << "\n";
 }
 //При создании массивов на 10 000 000 элементов 
+/*
+With OMP(lock):Время >> 0.267502
+With OMP(barier):Время >> 0.286165
+
+
+1 000 000 Элементов:
+
+With OMP(lock):Время >> 0.0292186
+With OMP(barier):Время >> 0.0353553
+
+
+
+100 000 Элементов:
+
+With OMP(lock):Время >> 0.0069531
+With OMP(barier):Время >> 0.0128843
+
+
+
+10 000 Элементов:
+
+With OMP(lock):Время >> 0.0031049
+With OMP(barier):Время >> 0.0066064
+
+
+
+1 000 Элементов:
+
+With OMP(lock):Время >> 0.0029748
+With OMP(barier):Время >> 0.0077086
+
+
+*/
